@@ -1,0 +1,225 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Наурызбаева Жанель">
+    <meta name="description" content="Страница с базой данных рецептов">
+    <title>Главная страница</title>
+    <script>
+
+
+        function getQueryUtility(url, listId, renderFunction) {
+            fetch(url, {
+                method: 'GET'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Ошибка HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const list = document.getElementById(listId);
+                    list.innerHTML = "";
+                    data.forEach(item => {
+                        const listItem = document.createElement("li");
+                        listItem.textContent = renderFunction(item);
+                        const deleteButton = document.createElement("button");
+                        deleteButton.textContent = "Удалить";
+                        deleteButton.onclick = function () {
+                            if (listId === "productList") {
+                                deleteAnything("http://localhost:8080/api/product", item.id)
+                                    .then(() => getProducts())
+                                    .catch(error => console.error("Ошибка при удалении продукта:", error));
+                            }
+
+                        if (listId === "recipeList") {
+                            deleteAnything("http://localhost:8080/api/recipes", item.idOfRecipe)
+                                .then(() => getRecipes())
+                                .catch(error => console.error("Ошибка при удалении рецепта:", error));
+                        }
+                    }
+
+                    
+                    const updateButton = document.createElement("button");
+                    updateButton.textContent = "Обновить";
+                    updateButton.onclick = function () {
+                        if (listId === "productList") {
+                            const updatedProduct = {
+                                name: prompt("Введите новое название продукта:", item.name) || item.name,
+                                translate: prompt("Введите новый перевод продукта:", item.translate) || item.translate,
+                                alterName: prompt("Введите новую категорию продукта:", item.alterName) || item.alterName
+                            };
+                            updateAnything("http://localhost:8080/api/product", item.id, updatedProduct)
+                                .then(() => getProducts())
+                                .catch(error => console.error("Ошибка при обновлении продукта:", error));
+                        }
+
+                        if (listId === "recipeList") {
+                            const updatedRecipe = {
+                                name: prompt("Введите новое название рецепта:", item.name) || item.name,
+                                translate_of_recipe: prompt("Введите новый перевод рецепта:", item.translate_of_recipe) || item.translate_of_recipe,
+                                alter_name_of_recipe: prompt("Введите новую категорию рецепта:", item.alter_name_of_recipe) || item.alter_name_of_recipe,
+                                recipe: prompt("Введите новый рецепт:", item.recipe) || item.recipe
+                            };
+                            updateAnything("http://localhost:8080/api/recipes", item.idOfRecipe, updatedRecipe)
+                                .then(() => getRecipes())
+                                .catch(error => console.error("Ошибка при обновлении рецепта:", error));
+                        }
+                    }
+                    listItem.appendChild(updateButton);
+                    listItem.appendChild(deleteButton);
+                    list.appendChild(listItem);
+                });
+            })
+                .catch(error => {
+                    console.error('Ошибка при получении данных:', error);
+                    document.getElementById("serverMessage").textContent = "Сервер недоступен. Пожалуйста, попробуйте позже.";
+                });
+        }
+
+         // Запрос данных с сервера
+            function getProducts() {
+                getQueryUtility("http://localhost:8080/api/products",
+                    "productList",
+                    product => `${product.name} - ${product.translate} - ${product.alterName}`);
+            };
+
+             function getRecipes() {
+                getQueryUtility("http://localhost:8080/api/recipes",
+                    "recipeList",
+                    recipe => `${recipe.name} - ${recipe.translate_of_recipe} - ${recipe.alter_name_of_recipe} - ${recipe.recipe}`);
+            };
+
+
+            function deleteAnything(url, id) {
+                return fetch(`${url}/${id}`, {
+                    method: "DELETE"
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Ошибка HTTP: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при удалении:', error);
+                        document.getElementById("serverMessage").textContent = "Сервер недоступен. Пожалуйста, попробуйте позже.";
+                    });
+            }
+
+            function updateAnything(url, id, data) {
+                return fetch(`${url}/${id}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Ошибка HTTP: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при обновлении:', error);
+                        document.getElementById("serverMessage").textContent = "Сервер недоступен. Пожалуйста, попробуйте позже.";
+                    });
+            }
+           
+
+            function postQueryUtility(url, data) {
+                return fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Ошибка HTTP: ${response.status}`);
+                        }
+                        return response.text();
+                    });
+            }
+
+            function addProduct() {
+                const product = {
+                    name: document.getElementById("nameOfProduct").value,
+                    translate: document.getElementById("translateOfProduct").value,
+                    alterName: document.getElementById("alterNameOfProduct").value
+                };
+
+                postQueryUtility("http://localhost:8080/api/product", product)
+                    .then(data => {
+                        console.log(data);
+                        getProducts();
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при получении данных:', error);
+                        document.getElementById("serverMessage").textContent = "Сервер недоступен. Пожалуйста, попробуйте позже.";
+                    });
+            }
+
+
+            function addRecipe() {
+                const recipe = {
+                    name: document.getElementById("nameOfRecipe").value,
+                    translate_of_recipe: document.getElementById("translateOfRecipe").value,
+                    alter_name_of_recipe: document.getElementById("alterNameOfRecipe").value,
+                    recipe: document.getElementById("recipe").value
+                };
+
+                postQueryUtility("http://localhost:8080/api/recipe", recipe)
+                    .then(data => {
+                        console.log(data);
+                        getRecipes();
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при получении данных:', error);
+                        document.getElementById("serverMessage").textContent = "Сервер недоступен. Пожалуйста, попробуйте позже.";
+                    });
+            }
+           window.onload = function() {
+    getProducts();
+    getRecipes();
+};
+
+    </script>
+</head>
+
+<body>
+    <!-- тут будет контент страницы -->
+    <h1>Сайт с рецептами</h1>
+    <p><b>Добро пожаловать на наш сайт с рецептами!</b></p>
+
+    <p id="serverMessage"></p>
+
+    <input id="nameOfProduct" placeholder="Название продукта">
+    <input id="translateOfProduct" placeholder="Перевод">
+    <input id="alterNameOfProduct" placeholder="Категория">
+
+
+    <input id="nameOfRecipe" placeholder="Название рецепта">
+    <input id="translateOfRecipe" placeholder="Перевод рецепта">
+    <input id="alterNameOfRecipe" placeholder="Категория рецепта">
+    <input id="recipe" placeholder="Рецепт">
+    <button onclick="addProduct()">Добавить продукт</button>
+    <button onclick="addRecipe()">Добавить рецепт</button>
+    <ul id="productList"></ul> <!-- Список продуктов -->
+    <!-- <button onclick="getProducts()">Показать продукты</button> -->
+    <ul id="recipeList"></ul>
+    <!-- <button onclick="getRecipes()">Показать рецепты</button> -->
+
+
+</body>
+
+</html>
