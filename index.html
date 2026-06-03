@@ -23,48 +23,9 @@
                     data.forEach(item => {
                         const listItem = document.createElement("li");
                         listItem.textContent = renderFunction(item);
-                        const deleteButton = document.createElement("button");
-                        deleteButton.textContent = "Удалить";
-                        deleteButton.onclick = function () {
-                            if (listId === "productList") {
-                                deleteAnything("http://localhost:8080/api/product", item.id)
-                                    .then(() => getProducts())
-                                    .catch(error => console.error("Ошибка при удалении продукта:", error));
-                            }
-
-                        if (listId === "recipeList") {
-                            deleteAnything("http://localhost:8080/api/recipes", item.idOfRecipe)
-                                .then(() => getRecipes())
-                                .catch(error => console.error("Ошибка при удалении рецепта:", error));
-                        }
-                    }
-                    const updateButton = document.createElement("button");
-                    updateButton.textContent = "Обновить";
-                    updateButton.onclick = function () {
-                        if (listId === "productList") {
-                            const updatedProduct = {
-                                name: prompt("Введите новое название продукта:", item.name) || item.name,
-                                translate: prompt("Введите новый перевод продукта:", item.translate) || item.translate,
-                                alterName: prompt("Введите новую категорию продукта:", item.alterName) || item.alterName
-                            };
-                            updateAnything("http://localhost:8080/api/product", item.id, updatedProduct)
-                                .then(() => getProducts())
-                                .catch(error => console.error("Ошибка при обновлении продукта:", error));
-                        }
-
-                        if (listId === "recipeList") {
-                            const updatedRecipe = {
-                                name: prompt("Введите новое название рецепта:", item.name) || item.name,
-                                translate_of_recipe: prompt("Введите новый перевод рецепта:", item.translate_of_recipe) || item.translate_of_recipe,
-                                alter_name_of_recipe: prompt("Введите новую категорию рецепта:", item.alter_name_of_recipe) || item.alter_name_of_recipe,
-                                recipe: prompt("Введите новый рецепт:", item.recipe) || item.recipe
-                            };
-                            updateAnything("http://localhost:8080/api/recipes", item.idOfRecipe, updatedRecipe)
-                                .then(() => getRecipes())
-                                .catch(error => console.error("Ошибка при обновлении рецепта:", error));
-                        }
-                    }
-                    listItem.appendChild(updateButton);
+                        const deleteButton = createButton("Удалить", function () {
+                    deleteItem(config, item);
+                });
                     listItem.appendChild(deleteButton);
                     list.appendChild(listItem);
                 });
@@ -88,6 +49,18 @@
                     recipe => `${recipe.name} - ${recipe.translate_of_recipe} - ${recipe.alter_name_of_recipe} - ${recipe.recipe}`);
             };
 
+            function deleteData(url, id) {
+            return fetch(`${url}/${id}`, {
+                method: "DELETE"
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Ошибка HTTP: ${response.status}`);
+                    }
+
+                    return response.text();
+                });
+        }
 
             function deleteAnything(url, id) {
                 return fetch(`${url}/${id}`, {

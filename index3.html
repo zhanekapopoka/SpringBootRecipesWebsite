@@ -1,0 +1,115 @@
+<script>
+        function addButton(listItem, item, listId) {
+            const updateButton = createButton("Изменить", function () {
+                if (listId == LIST_IDS.PRODUCTS) {
+                    const newName = prompt("Введите новое имя продукта:", item.name);
+                    const newTranslate = prompt("Введите новый перевод продукта:", item.translate);
+                    const newAlterName = prompt("Введите новую категорию продукта:", item.alterName);
+                    if (newName && newTranslate && newAlterName) {
+                        updateAnything(`http://localhost:8080/api/product`, item.id, {
+                            name: newName,
+                            translate: newTranslate,
+                            alterName: newAlterName
+                        }).then(() => getProducts());
+                    }
+                }
+
+                else if (listId == LIST_IDS.RECIPES) {
+                    const newName = prompt("Введите новое имя рецепта:", item.name);
+                    const newTranslate = prompt("Введите новый перевод рецепта:", item.translate_of_recipe);
+                    const newAlterName = prompt("Введите новую категорию рецепта:", item.alter_name_of_recipe);
+                    const newRecipe = prompt("Введите новый рецепт:", item.recipe);
+                    if (newName && newTranslate && newAlterName && newRecipe) {
+                        updateAnything(`http://localhost:8080/api/recipes`, item.idOfRecipe, {
+                            name: newName,
+                            translate_of_recipe: newTranslate,
+                            alter_name_of_recipe: newAlterName,
+                            recipe: newRecipe
+                        }).then(() => getRecipes());
+                    }
+                }
+            });
+            const deleteButton = createButton("Удалить", function () {
+                if (listId === LIST_IDS.PRODUCTS) {
+                    deleteItem("http://localhost:8080/api/product", item.id)
+                        .then(() => getProducts())
+                        .catch(error => {
+                            console.error('Ошибка при удалении продукта:', error);
+                            document.getElementById("serverMessage").textContent = "Сервер недоступен. Пожалуйста, попробуйте позже.";
+                        });
+                }
+
+                else if (listId === LIST_IDS.RECIPES) {
+                    deleteItem("http://localhost:8080/api/recipes", item.idOfRecipe)
+                        .then(() => getRecipes())
+                        .catch(error => {
+                            console.error('Ошибка при удалении рецепта:', error);
+                            document.getElementById("serverMessage").textContent = "Сервер недоступен. Пожалуйста, попробуйте позже.";
+                        });
+                }
+            }
+            );
+            listItem.appendChild(updateButton);
+            listItem.appendChild(deleteButton);
+        }
+
+        function addButton(listItem, item, listId) {
+    const updateButton = createButton("Изменить", function () {
+        updateItem(item, listId);
+    });
+
+    const deleteButton = createButton("Удалить", function () {
+        deleteSelectedItem(item, listId);
+    });
+
+    listItem.appendChild(updateButton);
+    listItem.appendChild(deleteButton);
+}
+function deleteSelectedItem(item, listId) {
+    if (listId === LIST_IDS.PRODUCTS) { 
+        deleteItem("http://localhost:8080/api/product", item.id)
+            .then(() => getProducts())
+            .catch(error => {
+                console.error('Ошибка при удалении продукта:', error);
+                document.getElementById("serverMessage").textContent = "Сервер недоступен. Пожалуйста, попробуйте позже.";
+            });
+        }
+        else if (listId === LIST_IDS.RECIPES) {
+            deleteItem("http://localhost:8080/api/recipes", item.idOfRecipe)
+                .then(() => getRecipes())
+                .catch(error => {
+                    console.error('Ошибка при удалении рецепта:', error);
+                    document.getElementById("serverMessage").textContent = "Сервер недоступен. Пожалуйста, попробуйте позже.";
+                });
+    }
+}
+function updateSelectedItem(item, listId) {
+    if(listId === LIST_IDS.PRODUCTS) {
+        const newName = prompt("Введите новое имя продукта:", item.name);
+        const newTranslate = prompt("Введите новый перевод продукта:", item.translate);
+        const newAlterName = prompt("Введите новую категорию продукта:", item.alterName);
+        if (newName && newTranslate && newAlterName) {
+            updateAnything(`http://localhost:8080/api/product`, item.id, {
+                name: newName,
+                translate: newTranslate,
+                alterName: newAlterName
+            }).then(() => getProducts());
+        }
+    }
+    else if (listId === LIST_IDS.RECIPES) {
+        const newName = prompt("Введите новое имя рецепта:", item.name);
+        const newTranslate = prompt("Введите новый перевод рецепта:", item.translate_of_recipe);
+        const newAlterName = prompt("Введите новую категорию рецепта:", item.alter_name_of_recipe);
+        const newRecipe = prompt("Введите новый рецепт:", item.recipe);
+        if (newName && newTranslate && newAlterName && newRecipe) {
+            updateAnything(`http://localhost:8080/api/recipes`, item.idOfRecipe, {
+                name: newName,
+                translate_of_recipe: newTranslate,
+                alter_name_of_recipe: newAlterName,
+                recipe: newRecipe
+            }).then(() => getRecipes());
+        }
+}
+}
+    
+        </script>
